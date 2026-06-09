@@ -1,4 +1,4 @@
-import { ServiceItem, WebhookConfig } from "./types";
+import { ServiceItem, WebhookConfig, LocationItem, IndustryItem, AppUser, SupportTicket } from "./types";
 
 export const allServices: ServiceItem[] = [
   {
@@ -144,3 +144,156 @@ export const defaultWebhookConfig: WebhookConfig = {
   triggerOnSearch: true,
   isActive: true,
 };
+
+export const allLocations: LocationItem[] = [
+  {
+    id: "loc_syd",
+    cityName: "Sydney",
+    slug: "sydney",
+    state: "NSW",
+    address: "Level 14, 200 George St, Sydney NSW 2000",
+    phone: "1300 112 233",
+    email: "sydney@aastaclean.com.au",
+    latitude: -33.8634,
+    longitude: 151.2111,
+    managerName: "Marcus Sterling",
+    isHeadquarters: true
+  },
+  {
+    id: "loc_mel",
+    cityName: "Melbourne",
+    slug: "melbourne",
+    state: "VIC",
+    address: "Suite 4B, 360 Collins St, Melbourne VIC 3000",
+    phone: "1300 112 244",
+    email: "melbourne@aastaclean.com.au",
+    latitude: -37.8142,
+    longitude: 144.9631,
+    managerName: "Elena Rostova"
+  },
+  {
+    id: "loc_per",
+    cityName: "Perth",
+    slug: "perth",
+    state: "WA",
+    address: "88 William St, Perth WA 6000",
+    phone: "1300 112 255",
+    email: "perth@aastaclean.com.au",
+    latitude: -31.9523,
+    longitude: 115.8613,
+    managerName: "Brodie Marshall"
+  },
+  {
+    id: "loc_bne",
+    cityName: "Brisbane",
+    slug: "brisbane",
+    state: "QLD",
+    address: "Level 3, 10 Eagle St, Brisbane QLD 4000",
+    phone: "1300 112 266",
+    email: "brisbane@aastaclean.com.au",
+    latitude: -27.4698,
+    longitude: 153.0251,
+    managerName: "Sarah Reynolds"
+  }
+];
+
+export const allIndustries: IndustryItem[] = [
+  {
+    id: "ind_health",
+    name: "Medical & Healthcare",
+    slug: "healthcare",
+    icon: "🏥",
+    heroImage: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=600",
+    description: "Pathology facilities, dental clinics, aged care sanitisation matching strict state-level environmental bio-hazard control.",
+    compliancePrereqs: ["AS/NZS 4187 Compliance", "Infection Control Certification", "TGA-Approved Disinfectant Standard"],
+    keyClients: ["Metro Health NSW", "Brisbane Dental Precinct", "Starlight Aged Care"]
+  },
+  {
+    id: "ind_ndis",
+    name: "NDIS Registered Support",
+    slug: "ndis",
+    icon: "♿",
+    heroImage: "https://images.unsplash.com/photo-1508847154043-be12a3bab74a?q=80&w=600",
+    description: "Specialized in-home support plan-compliant services enabling safe mobility, allergen eradication and dynamic carer check-in registries.",
+    compliancePrereqs: ["NDIS Practice Standards", "Worker Screening Checks", "Specialised Assistive Technology Safety"],
+    keyClients: ["Aria Disability Care", "Melbourne Plan Managers"]
+  },
+  {
+    id: "ind_corp",
+    name: "Corporate & Enterprise Offices",
+    slug: "corporate",
+    icon: "🏢",
+    heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600",
+    description: "Multistory CBD commercial towers, boards facilities, secure computer storage nodes under rigid WHS policy.",
+    compliancePrereqs: ["ISO 9001 Quality Certified", "WHS Act 2011 Compliance", "Secure Keyholding & NDA Clearances"],
+    keyClients: ["Sydney Equity Group", "Vanguard Collins", "TechHub Australia"]
+  },
+  {
+    id: "ind_construction",
+    name: "Post-Build & Construction",
+    slug: "builders",
+    icon: "🏗️",
+    heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=600",
+    description: "Post-masonry particulate sweeps, silica dust fine-filtration, safety window scraping, and pre-occupancy sign-off handovers.",
+    compliancePrereqs: ["White Card Verified Team", "Silica Dust Safety Equipment", "Commercial Structural Sign-Off Standards"],
+    keyClients: ["Multiplex West", "Mirvac Corporate Group", "Lendlease Regional Development"]
+  }
+];
+
+export const defaultUsers: AppUser[] = [
+  {
+    id: "usr_admin",
+    email: "admin@aastaclean.com.au",
+    fullName: "Marcus Sterling",
+    role: "admin",
+    phone: "0412 999 888"
+  },
+  {
+    id: "usr_cleaner",
+    email: "liam.vance@aastaclean.com.au",
+    fullName: "Liam Vance",
+    role: "cleaner",
+    phone: "0412 111 222"
+  },
+  {
+    id: "usr_cust",
+    email: "client@sydneycorp.com.au",
+    fullName: "Sophia Harrington",
+    role: "customer",
+    phone: "0422 345 678",
+    companyName: "Sydney Corp Ltd"
+  }
+];
+
+export const defaultTickets: SupportTicket[] = [
+  {
+    id: "tkt_101",
+    customerId: "usr_cust",
+    customerName: "Sophia Harrington",
+    subject: "NDIS Compliance Billing Request",
+    messages: [
+      {
+        id: "msg_1",
+        sender: "customer",
+        message: "Hi, I need an NDIS-compliant service item breakdown added to our upcoming invoice for auditing purposes.",
+        timestamp: "2026-06-08T09:30:00Z"
+      },
+      {
+        id: "msg_2",
+        sender: "system",
+        message: "Ticket assigned to Corporate Care Desk. Marcus Sterling is reviewing.",
+        timestamp: "2026-06-08T09:35:00Z"
+      },
+      {
+        id: "msg_3",
+        sender: "agent",
+        message: "Hello Sophia! I have updated your account profile. All future invoices will automatically list your exact Plan Reference & support guidelines.",
+        timestamp: "2026-06-08T10:15:00Z"
+      }
+    ],
+    status: "open",
+    priority: "high",
+    createdAt: "2026-06-08T09:30:00Z"
+  }
+];
+

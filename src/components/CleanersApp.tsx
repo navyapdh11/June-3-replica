@@ -391,6 +391,28 @@ export default function CleanersApp({
     }
   });
 
+  const [isWebOnline, setIsWebOnline] = useState<boolean>(() => {
+    if (typeof navigator !== "undefined") {
+      return navigator.onLine;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsWebOnline(true);
+    };
+    const handleOffline = () => {
+      setIsWebOnline(false);
+    };
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const [swStatus, setSwStatus] = useState<string>("detecting");
   const [projectedQuotes, setProjectedQuotes] = useState<QuoteRequest[]>(quotes);
 
@@ -1926,6 +1948,16 @@ export default function CleanersApp({
     ? "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-white border border-black gap-3 text-black"
     : "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-slate-950/80 border border-slate-850 rounded-xl gap-3";
 
+  const themeSyncStatusLabel = daylightHighContrast
+    ? (isWebOnline 
+        ? "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 border-2 border-black font-black uppercase text-black bg-white"
+        : "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 border-2 border-red-605 font-black uppercase text-red-700 bg-white"
+      )
+    : (isWebOnline
+        ? "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-bold uppercase tracking-wider font-mono shadow-sm"
+        : "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full font-bold uppercase tracking-wider font-mono shadow-sm"
+      );
+
   return (
     <section id="cleaners-app" className={themeSectionClasses}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -1933,11 +1965,25 @@ export default function CleanersApp({
         {/* Title Block with cleaner choice dropdown */}
         <div className={themeHeaderBorder}>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className={themeLabelMuted}>
                 Portals & Dispatch Hub
               </span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              
+              <div className={themeSyncStatusLabel}>
+                {isWebOnline ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Sync Status: Online</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    <span>Sync Status: Disconnected</span>
+                  </>
+                )}
+              </div>
             </div>
             <h2 className={themeTitleText}>
               <ClipboardList className={`w-6 h-6 ${daylightHighContrast ? "text-black" : "text-indigo-400"}`} /> Crew Cleaners' Portal App

@@ -1,41 +1,40 @@
-# --- STAGE 1: Build Stage ---
+# Multi-stage build for React (Vite) + Node (Express)
 FROM node:22-alpine AS builder
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Copy dependency manifests
+# Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build steps)
+# Install packages
 RUN npm ci
 
-# Copy full application files
+# Copy the rest of the application code
 COPY . .
 
-# Compile application (build React assets & bundle server.ts)
+# Build the client SPA & compile server.ts -> dist/server.cjs in production
 ENV NODE_ENV=production
 RUN npm run build
 
-# --- STAGE 2: Production Safe Runner ---
+# --- Runner Stage ---
 FROM node:22-alpine AS runner
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Set production context
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy compiled files from builder
+COPY --from=builder /usr/src/app/dist ./dist
+
+# Set production environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy dependency manifests for pruning
-COPY package*.json ./
-
-# Install ONLY production-grade dependencies to ensure lightweight footprint
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy only compiled assets and server bundles from the builder block
-COPY --from=builder /app/dist ./dist
-
-# Expose port (Dokploy will map this port dynamically to your subdomain/routing)
+# Expose the server port
 EXPOSE 3000
 
-# Start command
-CMD ["node", "dist/server.cjs"]
+# Start server
+CMD ["npm", "run", "start"]

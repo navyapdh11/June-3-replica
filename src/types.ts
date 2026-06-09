@@ -102,3 +102,66 @@ export interface PostcodeCoverage {
   disabledServices: string[];
 }
 
+export interface LocationItem {
+  id: string;
+  cityName: string;
+  slug: string;
+  state: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  managerName: string;
+  isHeadquarters?: boolean;
+}
+
+export interface IndustryItem {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  heroImage: string;
+  description: string;
+  compliancePrereqs: string[];
+  keyClients: string[];
+}
+
+export interface Job {
+  id: string;
+  quoteId: string;
+  cleanerId: string;
+  status: "assigned" | "en-route" | "in-progress" | "completed" | "paused";
+  checklistProgressPercentage: number;
+  completedTasks: string[];
+  photoProofIds: string[];
+  startTime: string;
+  endTime?: string;
+}
+
+export interface AppUser {
+  id: string;
+  email: string;
+  fullName: string;
+  role: "admin" | "cleaner" | "customer" | "guest";
+  phone?: string;
+  companyName?: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  customerId: string;
+  customerName: string;
+  subject: string;
+  messages: Array<{
+    id: string;
+    sender: "customer" | "agent" | "system";
+    message: string;
+    timestamp: string;
+  }>;
+  status: "open" | "resolved" | "pending_client";
+  priority: "low" | "medium" | "high";
+  createdAt: string;
+}
+
+

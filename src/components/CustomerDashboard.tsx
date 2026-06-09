@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   User, 
   Calendar, 
@@ -109,6 +109,108 @@ export default function CustomerDashboard({
 
   // Search/Filter bookings variables
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Canvas Refs for signature tracking on the customer dashboard sign-off board
+  const dashboardCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawingOnDashboard, setIsDrawingOnDashboard] = useState(false);
+  
+  // Local sign-off choices
+  const [selectedSignOffBookingId, setSelectedSignOffBookingId] = useState<string>(activeBooking.id);
+  const [signOffStars, setSignOffStars] = useState(5);
+  const [signOffFeedback, setSignOffFeedback] = useState("");
+  const [showSignOffSuccessAlert, setShowSignOffSuccessAlert] = useState(false);
+
+  // Drawing pad handlers
+  const startDrawingOnDashboard = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = dashboardCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    setIsDrawingOnDashboard(true);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#0f172a"; // Deep slate-900 color for high-visibility pen stroke
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+    // Accounts for physical size compared to boundingClientRect drawing scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    ctx.beginPath();
+    ctx.moveTo((clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY);
+  };
+
+  const drawOnDashboard = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawingOnDashboard) return;
+    const canvas = dashboardCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    ctx.lineTo((clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY);
+    ctx.stroke();
+  };
+
+  const stopDrawingOnDashboard = () => {
+    setIsDrawingOnDashboard(false);
+  };
+
+  const clearDashboardSignature = () => {
+    const canvas = dashboardCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  };
+
+  const submitDashboardSignature = () => {
+    const canvas = dashboardCanvasRef.current;
+    if (!canvas) return;
+    
+    const signatureDataUrl = canvas.toDataURL("image/png");
+    const targetBooking = quotes.find(q => q.id === selectedSignOffBookingId);
+    
+    if (targetBooking) {
+      const updated = {
+        ...targetBooking,
+        bookingStatus: "completed" as const,
+        clientSignature: signatureDataUrl,
+        siteDepartureTime: new Date().toLocaleTimeString(),
+        notes: `${targetBooking.notes || ""}\n[Client Approved via Customer Board with ${signOffStars}/5 rating: "${signOffFeedback || 'Excellent standard'}"]`
+      };
+      
+      onUpdateQuote(updated);
+      setShowSignOffSuccessAlert(true);
+      clearDashboardSignature();
+      setSignOffFeedback("");
+      
+      onTriggerLog({
+        id: `cust_board_signoff_${Date.now()}`,
+        type: "webhook",
+        status: "success",
+        message: `✍️ Customer Sign-off Board: Direct client verification recorded for Job #${selectedSignOffBookingId.slice(-6)}. Status: Completed.`,
+        timestamp: new Date().toLocaleTimeString(),
+      });
+      
+      setTimeout(() => {
+        setShowSignOffSuccessAlert(false);
+      }, 5500);
+    }
+  };
 
   // Simulated live GPS map movement
   const [gpsLatitude, setGpsLatitude] = useState(-31.95);
@@ -434,6 +536,29 @@ export default function CustomerDashboard({
             <Calendar className="w-4 h-4" />
             <span>My Bookings & Service Hub</span>
           </button>
+
+          <button
+            id="tab-btn-proof"
+            onClick={() => {
+              setActiveTab("proof");
+              onTriggerLog({
+                id: `tab_proof_${Date.now()}`,
+                type: "system",
+                status: "info",
+                message: "✍️ Customer toggled active tab to 'Customer Sign-off Board'",
+                timestamp: new Date().toLocaleTimeString(),
+              });
+            }}
+            className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 border ${
+              activeTab === "proof"
+                ? "bg-emerald-600/10 border-emerald-500/30 text-emerald-400 font-extrabold shadow-sm"
+                : "bg-transparent border-transparent text-slate-400 hover:text-white"
+            }`}
+          >
+            <FileCheck2 className="w-4 h-4 text-emerald-400" />
+            <span>Customer Sign-off Board</span>
+          </button>
+
           <button
             id="tab-btn-analytics"
             onClick={() => {
@@ -457,7 +582,7 @@ export default function CustomerDashboard({
           </button>
         </div>
 
-        {activeTab === "summary" ? (
+        {activeTab === "summary" && (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
@@ -1086,7 +1211,255 @@ export default function CustomerDashboard({
           </div>
         </div>
         </>
-        ) : (
+        )}
+
+        {/* --- CUSTOMER SIGN-OFF BOARD PANEL --- */}
+        {activeTab === "proof" && (
+          <div id="customer-sign-off-board" className="space-y-8 animate-fade-in text-slate-100">
+            {/* Header / Intro Banner */}
+            <div className="bg-slate-900 border border-emerald-500/10 rounded-3xl p-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+              <p className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                <FileCheck2 className="w-3.5 h-3.5" /> Customer Electronic Sign-off Desk
+              </p>
+              <h3 className="text-xl font-bold text-white mt-1">Direct Verification & Safety Sign-off Board</h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-4xl font-sans font-normal leading-relaxed">
+                AastaClean's client verification hub guarantees transparency. Electronically authorize completed cleans, log ISO 9001 checklists, and save official proof of service records directly.
+              </p>
+            </div>
+
+            {/* Main Interactive Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Column (8 cols): Active Job Drawpad */}
+              <div className="lg:col-span-8 bg-slate-900/40 border border-slate-800/80 p-6 rounded-3xl space-y-6">
+                <div>
+                  <h4 className="font-extrabold text-white text-base flex items-center gap-2">
+                    ✍️ Interactive Digital Signature Console
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Select any scheduled or approaching service below to provide final signature authorization and log compliance standards.
+                  </p>
+                </div>
+
+                {/* Dropdown Selector for selecting active bookings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-850">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Select Active Booking:</label>
+                    <select
+                      value={selectedSignOffBookingId}
+                      onChange={(e) => {
+                        setSelectedSignOffBookingId(e.target.value);
+                        onTriggerLog({
+                          id: `cust_board_select_${Date.now()}`,
+                          type: "system",
+                          status: "info",
+                          message: `📂 Customer targeted booking option: #${e.target.value.slice(-6)} on sign-off pad`,
+                          timestamp: new Date().toLocaleTimeString(),
+                        });
+                      }}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+                    >
+                      {quotes
+                        .filter(q => q.bookingStatus !== "completed" || q.id === "booking_101")
+                        .map(q => (
+                          <option key={q.id} value={q.id}>
+                            #{q.id.slice(-6)} - {q.serviceName} ({q.assignedCleaner || "Pending Crew"})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col justify-end">
+                    <div className="text-right">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase block tracking-wider">Status of selection</span>
+                      <span className="text-xs font-mono font-bold text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded inline-block mt-1">
+                        {quotes.find(q => q.id === selectedSignOffBookingId)?.bookingStatus || "pending"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Alert message if successfully signed */}
+                {showSignOffSuccessAlert && (
+                  <div className="bg-emerald-600/10 border border-emerald-500/30 p-4 rounded-2xl flex items-center gap-3 text-emerald-400 text-xs animate-pulse">
+                    <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-extrabold uppercase">SIGN-OFF AUTHORIZED SUCCESSFULLY!</p>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">The job status was successfully committed to our central database as 'completed'. Cleaners payroll metrics have updated.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Signature Board and feedback inputs */}
+                <div className="space-y-4">
+                  {/* Feedback Stars & Input */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Service Rating Stars:</label>
+                      <div className="flex gap-1.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            onClick={() => setSignOffStars(star)}
+                            className="hover:scale-110 transition-transform cursor-pointer"
+                          >
+                            <Star className={`w-5 h-5 ${star <= signOffStars ? "text-amber-400 fill-current" : "text-slate-800"}`} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Approval Comments:</label>
+                      <input
+                        type="text"
+                        placeholder="Write dynamic site notes or approval remarks..."
+                        value={signOffFeedback}
+                        onChange={(e) => setSignOffFeedback(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700 font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Canvas Pad */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Verify signature below:
+                      </label>
+                      <button
+                        onClick={clearDashboardSignature}
+                        className="text-[9px] font-mono font-bold uppercase text-rose-450 hover:text-rose-400 flex items-center gap-1 cursor-pointer bg-slate-950 border border-slate-850 px-2.5 py-1 rounded transition-colors"
+                      >
+                        Clear Canvas
+                      </button>
+                    </div>
+
+                    <div className="bg-slate-100 rounded-2xl border border-slate-800 overflow-hidden relative">
+                      <canvas
+                        ref={dashboardCanvasRef}
+                        width={600}
+                        height={180}
+                        onMouseDown={startDrawingOnDashboard}
+                        onMouseMove={drawOnDashboard}
+                        onMouseUp={stopDrawingOnDashboard}
+                        onMouseLeave={stopDrawingOnDashboard}
+                        onTouchStart={startDrawingOnDashboard}
+                        onTouchMove={drawOnDashboard}
+                        onTouchEnd={stopDrawingOnDashboard}
+                        className="w-full h-44 cursor-crosshair bg-slate-100 touch-none block"
+                      />
+                      <div className="absolute bottom-2 left-3 text-[9px] font-sans text-slate-400 select-none pointer-events-none font-medium">
+                        🖊️ Sign with your stylus, fingers, or mouse pointer
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submission and approval */}
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      🔐 Secure RSA SHA-256 signature token buffer active.
+                    </span>
+                    <button
+                      onClick={submitDashboardSignature}
+                      className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-widest cursor-pointer transition-all flex items-center gap-2 shadow-lg hover:shadow-emerald-500/10"
+                    >
+                      <FileCheck2 className="w-4 h-4" />
+                      <span>Approve & Complete Clean</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column (4 cols): Completed Certificates & Archive */}
+              <div className="lg:col-span-4 bg-slate-900/40 border border-slate-800/80 p-6 rounded-3xl space-y-6">
+                <div>
+                  <h4 className="font-extrabold text-white text-base flex items-center gap-1.5">
+                    📜 Archive & Verified Seals
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Historical compliance sign-offs issued to Sarah Reynolds.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {quotes
+                    .filter(q => q.bookingStatus === "completed")
+                    .map(q => (
+                      <div key={q.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-850 space-y-3.5 hover:border-slate-800 transition-all">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="text-[9px] font-mono font-bold text-zinc-500">JOB #{q.id.slice(-6)}</span>
+                            <h5 className="font-extrabold text-white text-xs mt-0.5">{q.serviceName}</h5>
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                            Verified
+                          </span>
+                        </div>
+
+                        {/* Shows signature if present */}
+                        {q.clientSignature ? (
+                          <div className="bg-white p-2 rounded-xl flex items-center justify-center border border-slate-800/20">
+                            <img
+                              src={q.clientSignature}
+                              alt="Job Signature Archive"
+                              className="h-12 w-32 object-contain"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        ) : (
+                          <div className="bg-slate-900 border border-dashed border-slate-800 p-2 text-center rounded-xl text-[10px] text-zinc-500 font-mono">
+                            Client approved during face-to-face inspection (No canvas backup saved)
+                          </div>
+                        )}
+
+                        <div className="text-[10px] text-slate-400 space-y-1 font-sans">
+                          <p className="flex justify-between">
+                            <span>📅 Completed On:</span>
+                            <span className="text-white font-mono">{q.siteDepartureTime || "11:35 AM"}</span>
+                          </p>
+                          <p className="flex justify-between">
+                            <span>🧑‍⚕️ Accredited Crew:</span>
+                            <span className="text-white font-mono">{q.assignedCleaner || "Liam Vance"}</span>
+                          </p>
+                          <p className="flex justify-between">
+                            <span>⭐ Score Rating:</span>
+                            <span className="text-amber-400 font-bold font-mono">5/5 Stars</span>
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            onTriggerLog({
+                              id: `download_cert_${q.id}`,
+                              type: "api",
+                              status: "success",
+                              message: `📥 Dispatched accredited PDF seal stream down for customer job archive Job #${q.id.slice(-6)}`,
+                              timestamp: new Date().toLocaleTimeString(),
+                            });
+                            alert(`Downloading verified compliance certificate PDF for Job #${q.id.slice(-6)}...`);
+                          }}
+                          className="w-full py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-zinc-400 hover:text-white font-mono font-bold text-[9px] rounded-lg cursor-pointer uppercase transition-all"
+                        >
+                          Download Ingress Certificate
+                        </button>
+                      </div>
+                    ))}
+
+                  {/* Empty Archive state */}
+                  {quotes.filter(q => q.bookingStatus === "completed").length === 0 && (
+                    <div className="py-8 text-center text-slate-550 text-xs font-mono border border-dashed border-slate-805/85 rounded-2xl">
+                      No matching completed/signed cleans inside historical register buffer.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- MARKET ANALYTICS VIEW --- */}
+        {activeTab === "analytics" && (
           /* MARKET ANALYTICS TAB CONTENT */
           <div id="market-analytics-view" className="space-y-8 animate-fade-in">
             {/* Header / Intro Banner */}
