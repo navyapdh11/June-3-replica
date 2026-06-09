@@ -69,6 +69,8 @@ export default function ServiceExplorer({ onOpenQuote, services = allServices }:
     }
   };
 
+  const activeService = services.find(s => s.slug === activeServiceSlug) || services[0] || allServices[0];
+
   // Addon services list
   const dynamicAddons = addonRegistry
     .filter((a) => a.categories.includes(activeService.category as any))
@@ -107,8 +109,6 @@ export default function ServiceExplorer({ onOpenQuote, services = allServices }:
         : (factorB || 0) - (factorA || 0);
     }
   });
-
-  const activeService = services.find(s => s.slug === activeServiceSlug) || services[0] || allServices[0];
 
 
   return (
