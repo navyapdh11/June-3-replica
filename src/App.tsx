@@ -5,6 +5,7 @@ import BentoServices from "./components/BentoServices";
 import IntegrationConsole from "./components/IntegrationConsole";
 import DeveloperSuite from "./components/DeveloperSuite";
 import CoverageCertifications from "./components/CoverageCertifications";
+import { useRef } from "react";
 import QuoteModal from "./components/QuoteModal";
 import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
@@ -81,6 +82,7 @@ const INITIAL_QUOTES: QuoteRequest[] = [
 ];
 
 export default function App() {
+  const coverageRef = useRef<HTMLDivElement>(null);
   // Modal & Service Selection State
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [selectedService, setSelectedService] = useState("");
@@ -356,6 +358,10 @@ export default function App() {
     }
   };
 
+  const scrollToCoverage = () => {
+    setCurrentView("client");
+    setTimeout(() => coverageRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
   const handleViewChange = (view: "client" | "admin" | "cleaner" | "seo" | "developer" | "services" | "pricing" | "dashboard" | "city-hub") => {
     setCurrentView(view);
     if (view === "developer") {
@@ -505,7 +511,7 @@ export default function App() {
           />
 
           {/* Coverage state maps and strict compliance frameworks */}
-          <CoverageCertifications />
+          <div ref={coverageRef}><CoverageCertifications /></div>
 
           {/* Stateful Accordion details */}
           <FAQ />
@@ -514,7 +520,7 @@ export default function App() {
         <ServiceExplorer
           onOpenQuote={handleOpenQuote}
           services={dynServices}
-          onViewChange={handleViewChange}
+          onViewChange={scrollToCoverage}
         />
       ) : currentView === "pricing" ? (
         <PricingCalculator
