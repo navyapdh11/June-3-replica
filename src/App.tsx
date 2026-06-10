@@ -514,6 +514,7 @@ export default function App() {
         <ServiceExplorer
           onOpenQuote={handleOpenQuote}
           services={dynServices}
+          onViewChange={handleViewChange}
         />
       ) : currentView === "pricing" ? (
         <PricingCalculator

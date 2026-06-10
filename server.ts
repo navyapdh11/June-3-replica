@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { calculateQuote } from "./src/utils/PricingCalculator";
 import { SERVICE_METADATA } from "./src/config/ServiceCatalog";
 import { initQueueSystem, enqueueJob, getQueueStats, getJobLogs } from "./src/utils/queue";
+import { QuoteInputSchema } from "./src/schemas";
 
 async function startServer() {
   // Gracefully boot standard Redis/BullMQ (or In-Memory Fallback)
@@ -39,11 +40,16 @@ async function startServer() {
 
   // 1. Enterprise Scalable API Gateway (For final pricing validation & CRM handshakes)
   app.post("/api/v1/quote", express.json(), (req, res) => {
-    const { serviceId, inputData } = req.body;
+    const validation = QuoteInputSchema.safeParse(req.body);
     
-    if (!serviceId) {
-      return res.status(400).json({ error: "Missing required serviceId parameter." });
+    if (!validation.success) {
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: validation.error.format() 
+      });
     }
+
+    const { serviceId, inputData } = validation.data;
 
     const service = SERVICE_METADATA[serviceId];
     if (!service) {
@@ -69,9 +75,9 @@ async function startServer() {
       // Enqueue job to dispatch automated team alert notification via modern channels (SMS/Email)
       enqueueJob("dispatch_notice", {
         bookingId: `quote_${Math.floor(Math.random() * 90000 + 10000)}`,
-        clientName: inputData?.clientName || inputData?.name || "Enterprise Lead Contact",
-        email: inputData?.email || "sandbox-quote@aastaclean.com.au",
-        phone: inputData?.phone || "0400 000 000",
+        clientName: validation.data.name || validation.data.clientName || "Enterprise Lead Contact",
+        email: validation.data.email,
+        phone: validation.data.phone,
         serviceName: service.name,
         totalAmount: calculatedPrice
       }).catch(err => console.error("⚠️ Background queue dispatch notification error:", err));

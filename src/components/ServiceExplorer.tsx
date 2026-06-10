@@ -24,12 +24,12 @@ import { ServiceItem } from "../types";
 import { allServices } from "../data";
 import { addonRegistry } from "../servicesCatalog";
 
-interface ServiceExplorerProps {
+interface ServiceExplorerProps { onViewChange: (view: string) => void;
   onOpenQuote: (service?: string) => void;
   services?: ServiceItem[];
 }
 
-export default function ServiceExplorer({ onOpenQuote, services = allServices }: ServiceExplorerProps) {
+export default function ServiceExplorer({ onOpenQuote, services = allServices, onViewChange }: ServiceExplorerProps) {
   const [selectedCategory, setSelectedCategory] = useState<"All" | "Commercial" | "Domestic" | "Specialised">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeServiceSlug, setActiveServiceSlug] = useState<string>("commercial-cleaning");
@@ -363,16 +363,12 @@ export default function ServiceExplorer({ onOpenQuote, services = allServices }:
                 <ArrowRight className="w-4 h-4 text-white" />
               </button>
               
-              <button
-                onClick={() => {
-                  window.location.hash = "#coverage";
-                  const target = document.getElementById("coverage");
-                  if (target) target.scrollIntoView({ behavior: "smooth" });
-                }}
+              <a
+                href="#coverage"
                 className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 px-6 rounded-2xl text-xs font-bold font-sans tracking-wide text-center cursor-pointer transition-colors"
               >
                 Map Coverage Zones
-              </button>
+              </a>
             </div>
 
           </div>

@@ -1,42 +1,9 @@
+import { useCleaners } from "../context/CleanersContext";
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  CheckCircle2, 
-  MapPin, 
-  Phone, 
-  Clock, 
-  User, 
-  Award, 
-  DollarSign, 
-  Briefcase, 
-  AlertCircle,
-  Truck,
-  Sparkles,
-  ClipboardList,
-  PenTool,
-  Navigation,
-  Play,
-  Square,
-  RefreshCw,
-  Map as MapIcon,
-  Unlock,
-  Mail,
-  Camera,
-  Upload,
-  Trash2,
-  Eye,
-  Send,
-  X,
-  Image as ImageIcon,
-  Wifi,
-  WifiOff,
-  Download,
-  HardDrive,
-  Flag,
-  MessageSquare,
-  Search,
-  Plus,
-  Minus
-} from "lucide-react";
+import { TeamDispatchChat } from "./Cleaners/TeamDispatchChat";
+import { CheckCircle2, MapPin, Phone, Clock, User, Award, DollarSign, Briefcase, AlertCircle, Truck, Sparkles, ClipboardList, PenTool, Navigation, Play, Square, RefreshCw, Map as MapIcon, Unlock, Mail, Camera, Upload, Trash2, Eye, Send, X, Image as ImageIcon, Wifi, WifiOff, Download, HardDrive, Flag, MessageSquare, Search, Plus, Minus } from "lucide-react";
+import { JobSignatureModal } from "./Cleaners/JobSignatureModal";
+import { OfflineSyncManager } from "./Cleaners/OfflineSyncManager";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import JSZip from "jszip";
 import { QuoteRequest, Cleaner } from "../types";
@@ -117,15 +84,20 @@ const compressImageBase64 = (base64Str: string, maxWidth = 800, maxHeight = 800,
   });
 };
 
-export default function CleanersApp({ 
-  quotes, 
-  cleaners, 
-  onUpdateQuote,
-  onTriggerLog
-}: CleanersAppProps) {
-  
-  const [activeCleanerName, setActiveCleanerName] = useState(cleaners[0]?.name || "");
-  const [daylightHighContrast, setDaylightHighContrast] = useState(false);
+import { CleanersProvider } from "../context/CleanersContext";
+// ... imports
+
+export default function CleanersApp({ quotes, cleaners, onUpdateQuote, onTriggerLog }: CleanersAppProps) {
+  return (
+    <CleanersProvider quotes={quotes} cleaners={cleaners} onUpdateQuote={onUpdateQuote} onTriggerLog={onTriggerLog}>
+       <CleanersContent />
+    </CleanersProvider>
+  );
+}
+
+function CleanersContent() {
+  // Original CleanersApp logic goes here...
+  const { quotes, cleaners, onUpdateQuote, onTriggerLog, activeCleanerName, setActiveCleanerName, daylightHighContrast, setDaylightHighContrast } = useCleaners();
   const [completedSubtasks, setCompletedSubtasks] = useState<Record<string, string[]>>(() => {
     try {
       const saved = localStorage.getItem("aastaclean_completed_subtasks");
@@ -1961,6 +1933,7 @@ export default function CleanersApp({
   return (
     <section id="cleaners-app" className={themeSectionClasses}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+              <OfflineSyncManager onSyncQueueChange={setOfflineSyncQueue} />
         
         {/* Title Block with cleaner choice dropdown */}
         <div className={themeHeaderBorder}>
@@ -4468,7 +4441,7 @@ export default function CleanersApp({
           </div>
         </div>
       )}
-
+    
     </section>
   );
 }
