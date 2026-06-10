@@ -1,3 +1,4 @@
+import { useCleaners } from "../context/CleanersContext";
 import React, { useEffect } from "react";
 
 interface MetadataManagerProps {
@@ -73,10 +74,24 @@ export default function MetadataManager({ currentView, selectedPostcode = "6008"
       document.head.appendChild(schemaScriptElt);
     }
 
+  const { inputData } = useCleaners(); // Access context for intent-based flags
+  
+
+    const isNDIS = inputData?.slaTier === 'ndis-certified' || inputData?.slaTier === 'ndis';
+    const isHACCP = inputData?.slaTier === 'gold-haccp' || inputData?.slaTier === 'haccp';
+    const isPlatinum = inputData?.slaTier === 'platinum-surgical' || inputData?.slaTier === 'platinum';
+
     const localBusinessSchema = {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": `AASTACLEAN Premium - ${geo.suburb}`,
+      "additionalProperty": [
+        isNDIS && { "@type": "PropertyValue", "name": "ServiceTier", "value": "NDIS Registered Provider" },
+        isHACCP && { "@type": "PropertyValue", "name": "ServiceTier", "value": "HACCP Certified Facility Hygiene" },
+        isPlatinum && { "@type": "PropertyValue", "name": "ServiceTier", "value": "Platinum Surgical Grade Sanitisation" }
+      ].filter(Boolean),
+      
+
       "image": "https://aastaclean.com.au/assets/hero.jpg",
       "telephone": "1300 00 AASTA",
       "email": "corporate@aastaclean.com.au",
