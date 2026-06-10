@@ -145,14 +145,14 @@ export const calculateQuote = (serviceId: string, inputData: any): number => {
       multiplier = postcodeMultipliers[postcode];
     } else {
       // General dynamic mapping matching our National Matrix state regulations
-      if (postcode.startsWith("26")) multiplier = 1.05; // ACT
-      else if (postcode.startsWith("2")) multiplier = 1.12; // NSW
-      else if (postcode.startsWith("3")) multiplier = 1.08; // VIC
-      else if (postcode.startsWith("4")) multiplier = 1.02; // QLD
+      if (postcode.startsWith("2")) multiplier = 1.18; // NSW (High density corridor)
+      else if (postcode.startsWith("3")) multiplier = 1.15; // VIC (Strategic metro expansion)
+      else if (postcode.startsWith("4")) multiplier = 1.10; // QLD (Growth market tier)
       else if (postcode.startsWith("5")) multiplier = 0.95; // SA
-      else if (postcode.startsWith("6")) multiplier = 1.00; // WA
+      else if (postcode.startsWith("6")) multiplier = 1.05; // WA (Market maturity tier)
       else if (postcode.startsWith("7")) multiplier = 0.90; // TAS
       else if (postcode.startsWith("0")) multiplier = 1.15; // NT
+      else if (postcode.startsWith("26")) multiplier = 1.05; // ACT
     }
   }
 

@@ -77,9 +77,12 @@ export default function ProgrammaticLandingPage({ onOpenQuote, onTriggerLog }: P
     { suburb: "Busselton", postcode: "6280", lat: -33.6532, lng: 115.3444, leadsFlow: 380 },
     { suburb: "Albany", postcode: "6330", lat: -35.0269, lng: 117.8837, leadsFlow: 290 },
     { suburb: "Perth CBD", postcode: "6000", lat: -31.9505, lng: 115.8605, leadsFlow: 890 },
-    { suburb: "Sydney CBD", postcode: "2000", lat: -33.8688, lng: 151.2093, leadsFlow: 1450 },
-    { suburb: "Melbourne Central", postcode: "3000", lat: -37.8136, lng: 144.9631, leadsFlow: 1220 },
-    { suburb: "Brisbane City", postcode: "4000", lat: -27.4705, lng: 153.0260, leadsFlow: 740 }
+    { suburb: "North Sydney", postcode: "2060", lat: -33.8344, lng: 151.2062, leadsFlow: 1100 },
+    { suburb: "Parramatta", postcode: "2150", lat: -33.8167, lng: 151.0025, leadsFlow: 950 },
+    { suburb: "Southbank", postcode: "3006", lat: -37.8236, lng: 144.9620, leadsFlow: 1050 },
+    { suburb: "St Kilda", postcode: "3182", lat: -37.8633, lng: 144.9789, leadsFlow: 750 },
+    { suburb: "Fortitude Valley", postcode: "4006", lat: -27.4566, lng: 153.0335, leadsFlow: 800 },
+    { suburb: "South Brisbane", postcode: "4101", lat: -27.4812, lng: 153.0232, leadsFlow: 650 }
   ]);
   const [hoveredGeoseed, setHoveredGeoseed] = useState<any | null>(null);
   const [adLaunched, setAdLaunched] = useState<boolean>(false);

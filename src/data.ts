@@ -133,7 +133,7 @@ export const allServices: ServiceItem[] = [
   }
 ];
 
-export const demoPostcodes = ["6000", "6004", "6005", "6007", "6008", "6009", "6010", "6019", "6027", "6160", "6210", "2000", "3000", "4000", "5000", "7000", "8000"];
+export const demoPostcodes = ["6000", "6004", "6005", "6007", "6008", "6009", "6010", "6019", "6027", "6160", "6210", "2000", "2001", "2002", "3000", "3001", "3002", "4000", "4001", "4002", "5000", "7000", "8000"];
 
 export const defaultWebhookConfig: WebhookConfig = {
   webhookUrl: "https://api.aastaclean.com/v1/quotes",
