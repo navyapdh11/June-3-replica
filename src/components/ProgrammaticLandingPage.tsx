@@ -82,7 +82,15 @@ export default function ProgrammaticLandingPage({ onOpenQuote, onTriggerLog }: P
     { suburb: "Southbank", postcode: "3006", lat: -37.8236, lng: 144.9620, leadsFlow: 1050 },
     { suburb: "St Kilda", postcode: "3182", lat: -37.8633, lng: 144.9789, leadsFlow: 750 },
     { suburb: "Fortitude Valley", postcode: "4006", lat: -27.4566, lng: 153.0335, leadsFlow: 800 },
-    { suburb: "South Brisbane", postcode: "4101", lat: -27.4812, lng: 153.0232, leadsFlow: 650 }
+    { suburb: "South Brisbane", postcode: "4101", lat: -27.4812, lng: 153.0232, leadsFlow: 650 },
+    { suburb: "Adelaide CBD", postcode: "5000", lat: -34.9285, lng: 138.6007, leadsFlow: 550 },
+    { suburb: "Glenelg", postcode: "5045", lat: -34.9814, lng: 138.5144, leadsFlow: 320 },
+    { suburb: "Hobart CBD", postcode: "7000", lat: -42.8821, lng: 147.3272, leadsFlow: 400 },
+    { suburb: "Launceston", postcode: "7250", lat: -41.4333, lng: 147.1333, leadsFlow: 250 },
+    { suburb: "Darwin City", postcode: "0800", lat: -12.4634, lng: 130.8456, leadsFlow: 350 },
+    { suburb: "Alice Springs", postcode: "0870", lat: -23.6980, lng: 133.8807, leadsFlow: 200 },
+    { suburb: "Canberra City", postcode: "2601", lat: -35.2809, lng: 149.1300, leadsFlow: 600 },
+    { suburb: "Belconnen", postcode: "2617", lat: -35.2435, lng: 149.0658, leadsFlow: 450 }
   ]);
   const [hoveredGeoseed, setHoveredGeoseed] = useState<any | null>(null);
   const [adLaunched, setAdLaunched] = useState<boolean>(false);
