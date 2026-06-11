@@ -82,6 +82,9 @@ const INITIAL_QUOTES: QuoteRequest[] = [
 ];
 
 export default function App() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const coverageRef = useRef<HTMLDivElement>(null);
   // Modal & Service Selection State
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
@@ -442,6 +445,8 @@ export default function App() {
       });
     }
   };
+
+  if (!isMounted) return <div className="loading-state flex items-center justify-center min-h-screen">Loading...</div>;
 
   return (
     <div className="font-sans antialiased bg-slate-50 text-slate-900 min-h-screen selection:bg-purple-500 selection:text-white pb-0">
