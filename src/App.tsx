@@ -91,20 +91,15 @@ export default function App() {
   const [selectedService, setSelectedService] = useState("");
 
   // Geographic / Admin states initialized from data or localStorage
-  const [dynServices, setDynServices] = useState<ServiceItem[]>(() => {
+  const [dynServices, setDynServices] = useState<ServiceItem[]>(allServices);
+  useEffect(() => {
     const saved = localStorage.getItem("aastaclean_services");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { setDynServices(JSON.parse(saved)); } catch (e) {}
     }
-    return allServices;
-  });
-
+  }, []);
   const [dynStates, setDynStates] = useState<StateCoverage[]>(() => {
-    const saved = localStorage.getItem("aastaclean_states");
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    return [
+  const [dynStates, setDynStates] = useState<StateCoverage[]>([
       { code: "NSW", name: "New South Wales", isActive: true },
       { code: "VIC", name: "Victoria", isActive: true },
       { code: "QLD", name: "Queensland", isActive: true },
@@ -112,10 +107,13 @@ export default function App() {
       { code: "SA", name: "South Australia", isActive: true },
       { code: "TAS", name: "Tasmania", isActive: true },
       { code: "NT", name: "Northern Territory", isActive: true }
-    ];
-  });
-
-  const [dynPostcodes, setDynPostcodes] = useState<PostcodeCoverage[]>(() => {
+    ]);
+  useEffect(() => {
+    const saved = localStorage.getItem("aastaclean_states");
+    if (saved) {
+      try { setDynStates(JSON.parse(saved)); } catch (e) {}
+    }
+  }, []);
     const defaultPostcodes: PostcodeCoverage[] = [
       { code: "2000", suburb: "Sydney CBD", state: "NSW", isActive: true, multiplier: 1.30, disabledServices: [] },
       { code: "3000", suburb: "Melbourne Central", state: "VIC", isActive: true, multiplier: 1.15, disabledServices: [] },
@@ -149,22 +147,21 @@ export default function App() {
   });
 
   // Guardrail states
-  const [travelSurcharge, setTravelSurcharge] = useState<number>(() => {
+  const [travelSurcharge, setTravelSurcharge] = useState<number>(15);
+  useEffect(() => {
     const saved = localStorage.getItem("aastaclean_travel_surcharge");
-    return saved !== null ? Number(saved) : 15;
-  });
-
+    if (saved !== null) setTravelSurcharge(Number(saved));
+  }, []);
   const [isUrgentActive, setIsUrgentActive] = useState<boolean>(() => {
+  const [isUrgentActive, setIsUrgentActive] = useState<boolean>(false);
+  useEffect(() => {
     const saved = localStorage.getItem("aastaclean_is_urgent_active");
-    return saved === "true";
-  });
-
-  const [minHoursLimit, setMinHoursLimit] = useState<number>(() => {
+    if (saved === "true") setIsUrgentActive(true);
+  const [minHoursLimit, setMinHoursLimit] = useState<number>(3);
+  useEffect(() => {
     const saved = localStorage.getItem("aastaclean_min_hours_limit");
-    return saved !== null ? Number(saved) : 3;
-  });
-
-  // Save states to localStorage
+    if (saved !== null) setMinHoursLimit(Number(saved));
+  }, []);
   useEffect(() => {
     localStorage.setItem("aastaclean_services", JSON.stringify(dynServices));
   }, [dynServices]);
