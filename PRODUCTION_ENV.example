@@ -1,0 +1,36 @@
+# PRODUCTION_ENV.example
+# This template contains all critical environment variables required for full-stack deployment.
+# Copy this to .env on your Dokploy server and populate the values.
+
+# --- Core Server Config ---
+PORT=3000
+APP_URL="https://your-domain.com"
+NODE_ENV="production"
+
+# --- Authentication & Security ---
+JWT_SECRET="YOUR_JWT_SECRET_STRING"
+ANON_KEY="YOUR_SUPABASE_ANON_KEY"
+SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+SUPABASE_URL="https://your-project.supabase.co"
+
+# --- AI & External APIs ---
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+GOOGLE_MAPS_PLATFORM_KEY="YOUR_GOOGLE_MAPS_KEY"
+
+# --- Payment & CRM Integrations ---
+STRIPE_SECRET_KEY="sk_live_..."
+TWILIO_ACCOUNT_SID="..."
+TWILIO_API_KEY="..."
+TWILIO_API_SECRET="..."
+TWILIO_TWIML_APP_SID="..."
+CHATWOOT_API_TOKEN="..."
+CHATWOOT_INBOX_ID="..."
+CHATWOOT_ACCOUNT_URL="..."
+
+# --- CDP/Analytics (Frontend/Backend) ---
+VITE_SEGMENT_WRITE_KEY="..."
+VITE_RUDDERSTACK_WRITE_KEY="..."
+VITE_RUDDERSTACK_DATA_PLANE_URL="..."
+
+# --- Background Processing (BullMQ/Redis) ---
+REDIS_URL="redis://:password@your-redis-host:6379"
