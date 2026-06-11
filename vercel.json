@@ -1,1 +1,8 @@
-{ "name": "june-3-replica" }
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
